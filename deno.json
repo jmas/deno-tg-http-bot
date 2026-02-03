@@ -1,7 +1,7 @@
 {
   "tasks": {
-    "dev": "deno run --watch --unstable-kv main.ts",
-    "start": "deno run --unstable-kv main.ts",
+    "dev": "deno run --watch --unstable-kv --allow-read --allow-write --allow-net main.ts",
+    "start": "deno run --unstable-kv --allow-read --allow-write --allow-net main.ts",
     "set-webhook": "deno run --allow-net set_webhook.ts"
   },
   "imports": {

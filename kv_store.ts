@@ -1,13 +1,12 @@
-const KV_PATH = "kv.db";
-
 export interface SavedRequest {
   nameOrId: string;
   content: string;
   createdAt: number;
 }
 
+/** Opens Deno KV. With no path, uses default persistent location (avoids NOT_FOUND in some environments). */
 export function openKv() {
-  return Deno.openKv(KV_PATH);
+  return Deno.openKv();
 }
 
 export async function listRequests(kv: Awaited<ReturnType<typeof openKv>>, userId: number): Promise<SavedRequest[]> {
