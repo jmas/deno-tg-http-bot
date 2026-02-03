@@ -1,4 +1,4 @@
-import { handleMessage } from "./handlers.ts";
+import { handleMessage, runCronCheck } from "./handlers.ts";
 import { openKv } from "./kv_store.ts";
 import type { Update } from "./telegram.ts";
 import { sendMessage, setWebhook } from "./telegram.ts";
@@ -46,10 +46,34 @@ async function handleSetWebhook(req: Request): Promise<Response> {
   }
 }
 
+async function handleCron(req: Request): Promise<Response> {
+  const cronSecret = Deno.env.get("CRON_SECRET");
+  if (cronSecret) {
+    const url = new URL(req.url);
+    const secret = url.searchParams.get("secret") ?? req.headers.get("X-Cron-Secret") ?? "";
+    if (secret !== cronSecret) {
+      return new Response("Forbidden", { status: 403 });
+    }
+  }
+  try {
+    await runCronCheck(token, kv);
+    return new Response("OK", { status: 200, headers: { "Content-Type": "text/plain" } });
+  } catch (e) {
+    console.error("Cron error:", e);
+    return new Response("Cron failed: " + String(e), {
+      status: 500,
+      headers: { "Content-Type": "text/plain" },
+    });
+  }
+}
+
 async function handleRequest(req: Request): Promise<Response> {
   const path = new URL(req.url).pathname;
   if (path === "/set-webhook" || path === "/set-webhook/") {
     return handleSetWebhook(req);
+  }
+  if (path === "/cron" || path === "/cron/") {
+    return handleCron(req);
   }
   if (req.method !== "POST") {
     return new Response("OK", { status: 200 });

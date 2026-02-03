@@ -26,9 +26,11 @@ Telegram sends each update as a POST to your webhook URL; the server processes i
 
 | Command | Description |
 |--------|-------------|
-| `/start`, `/list`, or any other text | Show list of your saved requests |
+| `/start`, `/list`, or any other text | Show list of your saved requests (subscribed ones are marked). |
 | `/add <NAME_AS_ID> <CONTENT>` | Save a new HTTP request. `<CONTENT>` is a raw HTTP request (method, path, headers, optional body). |
 | `/request_<NAME_OR_ID>` | Run the saved request and reply with the response (status + body, truncated to 4000 chars). |
+| `/subscribe_<NAME_OR_ID>` | Subscribe to change notifications for this request. When the HTTP response changes (checked every time `/cron` runs), you get a Telegram message. |
+| `/unsubscribe_<NAME_OR_ID>` | Stop change notifications for this request. |
 | `/delete <NAME_OR_ID>` | Delete a saved request. |
 
 ## Adding a request
@@ -43,6 +45,19 @@ Authorization: Bearer your_token_here
 ```
 
 The name is the first word after `/add`; the rest of the message (including newlines) is the full HTTP request. After saving, you can run it with `/request_locations`.
+
+## Cron (change notifications)
+
+Configure an external cron job (e.g. every 5 minutes) to call:
+
+- **GET or POST** `https://your-domain.com/cron`
+
+The server will run all subscribed requests, compare responses to the last run, and send a Telegram message to each subscriber when the response changed.
+
+Optional: set `CRON_SECRET` and pass it so only your cron service can trigger checks:
+
+- **GET** `https://your-domain.com/cron?secret=your_secret`
+- **Header** `X-Cron-Secret: your_secret`
 
 ## Requirements
 
