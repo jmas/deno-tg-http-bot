@@ -42,3 +42,15 @@ export async function sendMessage(
     throw new Error(`sendMessage failed: ${res.status} ${err}`);
   }
 }
+
+export async function setWebhook(token: string, url: string): Promise<void> {
+  const res = await fetch(`${TELEGRAM_API}${token}/setWebhook`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ url }),
+  });
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error(`setWebhook failed: ${res.status} ${err}`);
+  }
+}

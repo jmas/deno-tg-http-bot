@@ -9,11 +9,18 @@ A Telegram bot that stores and runs raw HTTP requests. Data is persisted with De
    ```bash
    export TELEGRAM_BOT_TOKEN=your_bot_token
    ```
-3. Run (requires `--unstable-kv` for Deno KV):
+3. Run the server so it is reachable by Telegram (e.g. on a VPS or behind ngrok). It listens on `PORT` (default 8080). Use HTTPS in production; Telegram requires it for webhooks.
+4. Register the webhook **once** (use the public URL Telegram will POST to). Either call the server URL:
+   - **GET** `https://your-domain.com/set-webhook?url=https://your-domain.com`
+   - **POST** to `/set-webhook` with body `{"url":"https://your-domain.com"}`
+   - Or set `WEBHOOK_URL` and run `deno task set-webhook`, or call `/set-webhook` with no params (uses `WEBHOOK_URL` env).
+5. Start the server (tasks use `--unstable-kv` for Deno KV):
    ```bash
    deno task start
    ```
    Or with watch: `deno task dev`
+
+Telegram sends each update as a POST to your webhook URL; the server processes it and replies to the user. No long-running polling.
 
 ## Commands
 
@@ -41,6 +48,7 @@ The name is the first word after `/add`; the rest of the message (including newl
 
 - Deno with `--unstable-kv` (for KV persistence).
 - `TELEGRAM_BOT_TOKEN` environment variable.
+- For webhook: a public HTTPS URL and one-time `set-webhook` (see above).
 
 ## Tests
 
